@@ -25,7 +25,7 @@ jobs:
       run: python build_exe.py
       
     - name: Upload executable
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v2
       with:
         name: PDF-Organizer
         path: dist/PDF-Organizer.exe
