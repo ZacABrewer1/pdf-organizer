@@ -1,4 +1,4 @@
-name: Build Windows Executable and Share
+name: Build Windows Executable and Host
 
 on:
   workflow_dispatch:
@@ -17,12 +17,20 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install PyPDF2 pillow pyinstaller requests
+        pip install PyPDF2 pillow pyinstaller
         
     - name: Build executable
       run: python build_exe.py
       
-    - name: Upload to transfer.sh
+    - name: Create download page
       run: |
-        $downloadUrl = (curl -H "Max-Downloads: 10" -H "Max-Days: 5" --upload-file ./dist/PDF-Organizer.exe https://transfer.sh/PDF-Organizer.exe)
-        echo "Download your executable from: $downloadUrl"
+        mkdir download_page
+        copy dist\PDF-Organizer.exe download_page\
+        echo "<html><head><title>PDF Organizer Download</title></head><body><h1>PDF Organizer Download</h1><p><a href='PDF-Organizer.exe'>Click here to download PDF-Organizer.exe</a></p></body></html>" > download_page\index.html
+      
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./download_page
+        force_orphan: true
