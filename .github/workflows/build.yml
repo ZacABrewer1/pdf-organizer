@@ -1,8 +1,6 @@
-name: Build Windows Executable
+name: Build Windows Executable and Share
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -19,10 +17,13 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install PyPDF2 pillow pyinstaller
+        pip install PyPDF2 pillow pyinstaller requests
         
     - name: Build executable
       run: python build_exe.py
       
-    - name: Display built files
-      run: dir dist
+    - name: Upload to file.io
+      run: |
+        pip install requests
+        $response = Invoke-RestMethod -Uri "https://file.io/" -Method Post -Form @{file=Get-Item -Path "dist/PDF-Organizer.exe"}
+        echo "Download URL: $($response.link)"
