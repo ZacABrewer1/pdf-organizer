@@ -1,0 +1,133 @@
+!pip install pyinstaller ipywidgets PyPDF2
+
+import os
+import shutil
+import re
+import sys
+from typing import Dict, List, Tuple
+import ipywidgets as widgets
+from IPython.display import display
+import PyPDF2
+
+# This section is for PyInstaller to correctly bundle the platform plugins
+# for ipywidgets to function properly as an executable file
+os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = os.path.join(
+    sys._MEIPASS, "PyQt5", "Qt", "plugins", "platforms"
+)
+
+# Configuration (replace with your actual paths)
+# PDF_FOLDER will be set dynamically
+TARGET_FOLDERS: Dict[str, str] = {
+    "Job A": "/path/to/job_a_folder",
+    "Job B": "/path/to/job_b_folder",
+    "Job C": "/path/to/job_c_folder",
+}
+CONFIG_FILE = "pdf_mapping.txt"
+
+
+def get_pdf_files(folder: str) -> List[str]:
+    return [f for f in os.listdir(folder) if f.endswith(".pdf")]
+
+
+def extract_job_text(pdf_path: str) -> str:
+    try:
+        with open(pdf_path, "rb") as pdf_file:
+            pdf_reader = PyPDF2.PdfReader(pdf_file)
+            num_pages = len(pdf_reader.pages)
+
+            for page_num in range(num_pages):
+                page = pdf_reader.pages[page_num]
+                text = page.extract_text()
+                # Search for "Job:" and extract the following text
+                match = re.search(r"Job:\s*(.*)", text, re.IGNORECASE)
+                if match:
+                    return match.group(1).strip()  # Return the extracted job name
+
+        return "Unknown Job"  # Return if "Job:" not found in any page
+
+    except Exception as e:
+        print(f"Error parsing PDF '{pdf_path}': {e}")
+        return "Unknown Job"  # Handle errors gracefully
+
+
+def load_mapping(config_file: str) -> Dict[str, str]:
+    mapping = {}
+    if os.path.exists(config_file):
+        with open(config_file, "r") as f:
+            for line in f:
+                parts = line.strip().split(",")
+                if len(parts) == 2:
+                    mapping[parts[0]] = parts[1]
+    return mapping
+
+
+def save_mapping(config_file: str, mapping: Dict[str, str]):
+    with open(config_file, "w") as f:
+        for pdf_file, target_folder in mapping.items():
+            f.write(f"{pdf_file},{target_folder}\n")
+
+
+def organize_pdfs(
+    pdf_folder: str, target_folders: Dict[str, str], config_file: str
+):
+    existing_mapping = load_mapping(config_file)
+    pdf_files = get_pdf_files(pdf_folder)
+    progress_bar = widgets.IntProgress(
+        min=0, max=len(pdf_files), description="Organizing:", bar_style="info"
+    )
+    display(progress_bar)  # display the progress bar
+
+    for i, pdf_file in enumerate(pdf_files):
+        pdf_path = os.path.join(pdf_folder, pdf_file)
+
+        if pdf_file in existing_mapping:
+            target_folder = existing_mapping[pdf_file]
+        else:
+            job_text = extract_job_text(
+                pdf_path
+            )  # Extract from PDF content (using PyPDF2)
+
+            if job_text in target_folders:
+                target_folder = target_folders[job_text]
+            else:
+                print(f"Job '{job_text}' not found in the mapping for {pdf_file}")
+                target_folder = target_folders.get(
+                    "Unknown Job", pdf_folder
+                )  # Default to the source folder if "Unknown Job" is not defined
+
+            existing_mapping[pdf_file] = target_folder
+
+        destination_path = os.path.join(target_folder, pdf_file)
+        try:
+            shutil.move(pdf_path, destination_path)
+            print(f"Moved '{pdf_file}' to '{destination_path}'")
+        except FileNotFoundError:
+            print(f"Error: Target folder '{target_folder}' does not exist.")
+        except shutil.Error as e:
+            print(f"Error moving '{pdf_file}': {e}")
+
+        progress_bar.value += 1  # update the progress bar
+
+    save_mapping(config_file, existing_mapping)
+
+
+# Create a file selector widget
+pdf_folder_selector = widgets.Text(
+    value="/path/to/your/pdfs",  # Set the default path here
+    placeholder="Enter path to PDF folder",
+    description="PDF Folder:",
+)
+
+# Create a button to trigger the organization
+organize_button = widgets.Button(description="Organize PDFs")
+
+
+# Define the button click event handler
+def on_organize_button_click(b):
+    organize_pdfs(pdf_folder_selector.value, TARGET_FOLDERS, CONFIG_FILE)
+
+
+organize_button.on_click(on_organize_button_click)
+
+# Display the widgets
+display(pdf_folder_selector, organize_button)
