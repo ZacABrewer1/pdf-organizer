@@ -22,8 +22,7 @@ jobs:
     - name: Build executable
       run: python build_exe.py
       
-    - name: Upload to file.io
+    - name: Upload to transfer.sh
       run: |
-        pip install requests
-        $response = Invoke-RestMethod -Uri "https://file.io/" -Method Post -Form @{file=Get-Item -Path "dist/PDF-Organizer.exe"}
-        echo "Download URL: $($response.link)"
+        $downloadUrl = (curl -H "Max-Downloads: 10" -H "Max-Days: 5" --upload-file ./dist/PDF-Organizer.exe https://transfer.sh/PDF-Organizer.exe)
+        echo "Download your executable from: $downloadUrl"
