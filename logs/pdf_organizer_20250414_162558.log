@@ -1,0 +1,9 @@
+2025-04-14 16:25:58,540 - root - INFO - Logger initialized. Log file: /home/runner/workspace/logs/pdf_organizer_20250414_162558.log
+2025-04-14 16:25:58,540 - root - INFO - Starting PDF Organizer application
+2025-04-14 16:25:58,654 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-04-14 16:25:58,654 - PIL.PngImagePlugin - DEBUG - STREAM b'caBX' 41 12117
+2025-04-14 16:25:58,654 - PIL.PngImagePlugin - DEBUG - b'caBX' 41 12117 (unknown)
+2025-04-14 16:25:58,654 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 12170 65536
+2025-04-14 16:25:58,684 - root - INFO - Set application icon from /home/runner/workspace/generated-icon.png
+2025-04-14 16:25:58,685 - config_manager - INFO - Config file not found at ./pdf_organizer_config.json, using defaults
+2025-04-14 16:25:58,685 - config_manager - INFO - Mapping file not found at ./pdf_mapping.json, creating new

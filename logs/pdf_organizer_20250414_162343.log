@@ -1,0 +1,4 @@
+2025-04-14 16:23:43,148 - root - INFO - Logger initialized. Log file: /home/runner/workspace/logs/pdf_organizer_20250414_162343.log
+2025-04-14 16:23:43,148 - root - INFO - Starting PDF Organizer application
+2025-04-14 16:23:44,687 - config_manager - INFO - Config file not found at ./pdf_organizer_config.json, using defaults
+2025-04-14 16:23:44,687 - config_manager - INFO - Mapping file not found at ./pdf_mapping.json, creating new
